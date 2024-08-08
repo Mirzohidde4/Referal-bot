@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from config import TOKEN
 from states import phone
 from dt_baza import Add_db, Read_db
-from buttons import havola
+from buttons import havola, telefon
 
 
 logging.basicConfig(level=logging.INFO)
@@ -20,42 +20,43 @@ dp = Dispatcher()
 async def smd_start(message: Message, state: FSMContext):
     user_id = message.from_user.id
     
-    args = message.text.split()[1:]
-    if args:
-        referal_user_id = int(args[0])
-        new_user_id = message.from_user.id
-        referal_user = await bot.get_chat(referal_user_id)
-        referal_username = referal_user.username
-        referal_fullname = referal_user.full_name
-
-        if referal_username:
-            await message.reply(f"Xush kelibsiz! Sizni @{referal_username} taklif qildi.")
-        else:
-            await message.reply(f"Xush kelibsiz! Sizni {referal_fullname} taklif qildi.")
+    if any(user[0] == user_id for user in Read_db()):
+        await message.reply(
+            text=f'{html.bold('Xush kelibsiz, siz allaqachon ro\'yxatdan o\'tgansiz!\nBotdan foydalanishingiz mumkin.')}',
+            reply_markup=havola
+            )
+        await state.set_state(phone.havola)
     
     else:
-        if any(user[0] == user_id for user in Read_db()):
-            await message.reply(
-                text="Xush kelibsiz, siz allaqachon ro'yxatdan o'tgansiz!\nBotdan foydalanishingiz mumkin.",
-                reply_markup=havola
-                )
-            await state.set_state(phone.havola)
+        args = message.text.split()[1:]
+        if args:
+            referal_user_id = int(args[0])
+            new_user_id = message.from_user.id
+            referal_user = await bot.get_chat(referal_user_id)
+            referal_username = referal_user.username
+            referal_fullname = referal_user.full_name
+
+            if referal_username:
+                await message.reply(
+                    text=f'{html.bold(f'Xush kelibsiz! Sizni @{referal_username} taklif qildi.\nBotdan foydalanish uchun ro\'yhatdan o\'tish tugmasini bosing')}.',
+                    reply_markup=telefon
+                    )
+            else:
+                await message.reply(
+                    text=f'{html.bold(f'Xush kelibsiz! Sizni {html.underline(referal_fullname)} taklif qildi.\nBotdan foydalanish uchun ro\'yhatdan o\'tish tugmasini bosing.')}',
+                    reply_markup=telefon    
+                    )
         
-        else:
+        else: 
             await message.reply(
-                text=f"{html.bold("Assalomu Alaykum xush kelibsiz.\nbotdan foydalanish uchun ro'yhatdan o'tish tugmasini bosing.")}",
-                reply_markup=ReplyKeyboardMarkup(
-                    keyboard=[
-                        [KeyboardButton(text="Ro'yhatdan o'tish", request_contact=True)]
-                    ], 
-                    resize_keyboard=True, one_time_keyboard=True,
-                )
+                text=f'{html.bold("Assalomu Alaykum xush kelibsiz.\nBotdan foydalanish uchun ro'yhatdan o'tish tugmasini bosing.")}',
+                reply_markup=telefon
             )
-            await state.set_state(phone.telefon)
+        await state.set_state(phone.telefon)
 
 
 @dp.message(F.contact, phone.telefon)
-async def telefon(message: Message, state: FSMContext):
+async def telephon(message: Message, state: FSMContext):
     await message.delete()
 
     user_id = message.from_user.id
