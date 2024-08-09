@@ -26,7 +26,6 @@ async def smd_start(message: Message, state: FSMContext):
             text=f'{html.bold('☺️ Xush kelibsiz, siz allaqachon ro\'yxatdan o\'tgansiz!\nBotdan foydalanishingiz mumkin.')}\n\n@{bot_username}',
             reply_markup=btn.as_markup()
             )
-        await state.set_state(phone.havola)
     
     else:
         referal = message.text.split()[1:]
