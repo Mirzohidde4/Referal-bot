@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from config import TOKEN
 from states import phone
 from dt_baza import Add_db, Read_db
-from buttons import havola, telefon
+from buttons import btn, telefon, qaytish
 
 
 logging.basicConfig(level=logging.INFO)
@@ -19,18 +19,19 @@ dp = Dispatcher()
 @dp.message(CommandStart())
 async def smd_start(message: Message, state: FSMContext):
     user_id = message.from_user.id
+    bot_username = (await bot.get_me()).username
     
     if any(user[0] == user_id for user in Read_db()):
         await message.reply(
-            text=f'{html.bold('Xush kelibsiz, siz allaqachon ro\'yxatdan o\'tgansiz!\nBotdan foydalanishingiz mumkin.')}',
-            reply_markup=havola
+            text=f'{html.bold('☺️ Xush kelibsiz, siz allaqachon ro\'yxatdan o\'tgansiz!\nBotdan foydalanishingiz mumkin.')}\n\n@{bot_username}',
+            reply_markup=btn.as_markup()
             )
         await state.set_state(phone.havola)
     
     else:
-        args = message.text.split()[1:]
-        if args:
-            referal_user_id = int(args[0])
+        referal = message.text.split()[1:]
+        if referal:
+            referal_user_id = int(referal[0])
             new_user_id = message.from_user.id
             referal_user = await bot.get_chat(referal_user_id)
             referal_username = referal_user.username
@@ -38,18 +39,18 @@ async def smd_start(message: Message, state: FSMContext):
 
             if referal_username:
                 await message.reply(
-                    text=f'{html.bold(f'Xush kelibsiz! Sizni @{referal_username} taklif qildi.\nBotdan foydalanish uchun ro\'yhatdan o\'tish tugmasini bosing')}.',
+                    text=f'{html.bold(f'☺️ Xush kelibsiz! Sizni @{referal_username} taklif qildi.\nBotdan foydalanish uchun ro\'yhatdan o\'tish tugmasini bosing.')}\n\n@{bot_username}',
                     reply_markup=telefon
                     )
             else:
                 await message.reply(
-                    text=f'{html.bold(f'Xush kelibsiz! Sizni {html.underline(referal_fullname)} taklif qildi.\nBotdan foydalanish uchun ro\'yhatdan o\'tish tugmasini bosing.')}',
+                    text=f'{html.bold(f'☺️ Xush kelibsiz! Sizni {html.underline(referal_fullname)} taklif qildi.\nBotdan foydalanish uchun ro\'yhatdan o\'tish tugmasini bosing.')}\n\n@{bot_username}',
                     reply_markup=telefon    
                     )
         
         else: 
             await message.reply(
-                text=f'{html.bold("Assalomu Alaykum xush kelibsiz.\nBotdan foydalanish uchun ro'yhatdan o'tish tugmasini bosing.")}',
+                text=f'{html.bold("☺️ Assalomu Alaykum xush kelibsiz.\nBotdan foydalanish uchun ro'yhatdan o'tish tugmasini bosing.")}\n\n@{bot_username}',
                 reply_markup=telefon
             )
         await state.set_state(phone.telefon)
@@ -58,6 +59,7 @@ async def smd_start(message: Message, state: FSMContext):
 @dp.message(F.contact, phone.telefon)
 async def telephon(message: Message, state: FSMContext):
     await message.delete()
+    bot_username = (await bot.get_me()).username
 
     user_id = message.from_user.id
     fullname = message.from_user.full_name
@@ -67,22 +69,49 @@ async def telephon(message: Message, state: FSMContext):
     try:
         Add_db(user_id=user_id, fullname=fullname, username=username, phone=tel)
         await message.answer(
-            text="Botdan foydalanishingiz mumkin",
-            reply_markup=havola
+            text=f'{html.bold("✅ Siz ro'yhatdan muvaffaqiyatli o'tdingiz.\nBotdan foydalanishingiz mumkin.")}\n\n@{bot_username}',
+            reply_markup=btn.as_markup()
             )
-        await state.set_state(phone.havola)
+        # await state.set_state(phone.havola)
 
     except Exception as ex:
         print(f"User saqlashda xatolik: {ex}")
 
 
-@dp.callback_query(F.data == "ssilka", phone.havola)
+@dp.callback_query(F.data.startswith("my_"))
 async def havolam(call: CallbackQuery, state: FSMContext):
-    user_id = call.message.chat.id
+    await call.message.delete()
+    action = call.data.split("_")[1]
     bot_username = (await bot.get_me()).username
-    link = f"https://t.me/{bot_username}?start={user_id}"
-    await call.message.reply(f"Bu sizning havolangiz: {link}")
 
+    if action == "ssilka":
+        user_id = call.message.chat.id
+        link = f"https://t.me/{bot_username}?start={user_id}"
+        
+        await call.message.answer(
+            text=f'{html.bold(f'''
+✅ Balans yig'ish uchun havolangizni do'stlaringizga ulashing
+❗️1 ta taklif qilingan do'stingiz uchun 1000 so'm (🇺🇿) balans oling !
+👇Bu sizning havolangiz: 
+{link}
+        ''')}',
+        reply_markup=qaytish
+            )
+
+    elif action == "ballans":
+        await call.message.answer(
+            text=f'Sizning balansizngiz:\n\n\n@{bot_username}',
+            reply_markup=qaytish
+        )
+
+    elif action == "back":
+        await call.message.answer(
+            text=f'💥{html.bold("Botga do\'stlaringizni taklif qiling va pul ishlang!")}\n\n@{bot_username}',
+            reply_markup=btn.as_markup()
+    )   
+
+
+    
 
 
 
