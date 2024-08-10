@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
 from config import TOKEN
 from states import phone
-from dt_baza import Add_db, Read_db
+from dt_baza import Add_db, Read_db, Add_Ref, Read_Ref
 from buttons import btn, telefon, qaytish
 
 
@@ -35,6 +35,8 @@ async def smd_start(message: Message, state: FSMContext):
             referal_user = await bot.get_chat(referal_user_id)
             referal_username = referal_user.username
             referal_fullname = referal_user.full_name
+
+            # Add_Ref(ref_user_id=referal_user_id, new_user_id=new_user_id) xato ishlatildi
 
             if referal_username:
                 await message.reply(
@@ -71,7 +73,6 @@ async def telephon(message: Message, state: FSMContext):
             text=f'{html.bold("✅ Siz ro'yhatdan muvaffaqiyatli o'tdingiz.\nBotdan foydalanishingiz mumkin.")}\n\n@{bot_username}',
             reply_markup=btn.as_markup()
             )
-        # await state.set_state(phone.havola)
 
     except Exception as ex:
         print(f"User saqlashda xatolik: {ex}")

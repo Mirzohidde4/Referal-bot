@@ -6,11 +6,9 @@ def create_table():
     try:
         connection= sqlite3.connect('sqlite3.db')
 
-        table = """ CREATE TABLE Users (
-                    user_id BIGINT NOT NULL ,
-                    fullname TEXT NOT NULL ,
-                    username TEXT NOT NULL ,
-                    phone TEXT NOT NULL 
+        table = """ CREATE TABLE Referals (
+                    ref_user_id BIGINT NOT NULL ,
+                    new_user_id BIGINT NOT NULL 
                 ); """
         cursor = connection.cursor()
         print("databaza yaratildi")
@@ -47,12 +45,54 @@ def Add_db(user_id, fullname, username, phone):
             # print("Sqlite ish foalyatini tugatdi")      
 
 
+def Add_Ref(ref_user_id, new_user_id):
+    try:
+        with sqlite3.connect("sqlite3.db") as connection:
+            cursor = connection.cursor()
+            
+            table = '''
+                INSERT INTO Referals(ref_user_id, new_user_id) VALUES(?, ?)
+            '''
+            cursor.execute(table, (ref_user_id, new_user_id))
+            connection.commit()
+            print("SQLite tablega qo'shildi")
+            cursor.close()
+
+    except sqlite3.Error as error:
+        print("Error while creating a sqlite table", error)
+    finally:
+        if connection:
+            connection.close()
+            # print("Sqlite ish foalyatini tugatdi")      
+
+
 def Read_db():
     try:
         with sqlite3.connect("sqlite3.db") as sqliteconnection:
             cursor = sqliteconnection.cursor()
             sql_query = """
                 SELECT * FROM Users 
+            """
+        
+            cursor.execute(sql_query) 
+            A = cursor.fetchall()
+            print("table oqildi")
+            return A
+
+    except Error as error:
+        print("xatolik:", error)
+    finally:
+        if sqliteconnection:
+            sqliteconnection.close()
+            # print("sqlite faoliyatini tugatdi")                        
+
+
+def Read_Ref():
+    try:
+        with sqlite3.connect("sqlite3.db") as sqliteconnection:
+            cursor = sqliteconnection.cursor()
+            sql_query = """
+                SELECT * FROM Referals 
             """
         
             cursor.execute(sql_query) 
