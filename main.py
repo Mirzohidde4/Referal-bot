@@ -67,15 +67,20 @@ async def telephon(message: Message, state: FSMContext):
     username = message.from_user.username
     tel = message.contact.phone_number
 
-    try:
-        Add_db(user_id=user_id, fullname=fullname, username=username, phone=tel)
-        await message.answer(
-            text=f'{html.bold("✅ Siz ro'yhatdan muvaffaqiyatli o'tdingiz.\nBotdan foydalanishingiz mumkin.")}\n\n@{bot_username}',
-            reply_markup=btn.as_markup()
-            )
+    for user in Read_db():
+        if (user[0] == user_id) and (user[1] == fullname or user[2] == username):
+            await message.answer(text=f'{html.bold("Siz oldin ro'yhatdan o'tgansiz!")}')
+            return
+    else:    
+        try:
+            Add_db(user_id=user_id, fullname=fullname, username=username, phone=tel)
+            await message.answer(
+                text=f'{html.bold("✅ Siz ro'yhatdan muvaffaqiyatli o'tdingiz.\nBotdan foydalanishingiz mumkin.")}\n\n@{bot_username}',
+                reply_markup=btn.as_markup()
+                )
 
-    except Exception as ex:
-        print(f"User saqlashda xatolik: {ex}")
+        except Exception as ex:
+            print(f"User saqlashda xatolik: {ex}")
 
 
 @dp.callback_query(F.data.startswith("my_"))
@@ -111,14 +116,6 @@ async def havolam(call: CallbackQuery, state: FSMContext):
     )   
 
 
-    
-
-
-
-
-
-
-
 @dp.message(F.text)
 async def echo(message: Message):
     await message.reply(text="Botni qayta ishga tushirish uchun /start ni bosing.")
@@ -126,7 +123,6 @@ async def echo(message: Message):
 
 async def main():
     await dp.start_polling(bot)
-
 
 if __name__ == "__main__":
     try:
