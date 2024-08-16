@@ -106,3 +106,11 @@ def Read_Ref():
         if sqliteconnection:
             sqliteconnection.close()
             # print("sqlite faoliyatini tugatdi")                        
+
+
+def Balans(user_id):
+    takliflar = 0
+    for user in Read_Ref():
+        if user[0] == user_id:
+            takliflar += 1
+    return takliflar        

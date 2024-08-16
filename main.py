@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.context import FSMContext
 from config import TOKEN
 from states import phone
-from dt_baza import Add_db, Read_db, Add_Ref, Read_Ref
+from dt_baza import Add_db, Read_db, Add_Ref, Read_Ref, Balans
 from buttons import btn, telefon, qaytish
 
 
@@ -107,15 +107,15 @@ async def havolam(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
     action = call.data.split("_")[1]
     bot_username = (await bot.get_me()).username
+    user_id = call.message.chat.id
 
     if action == "ssilka":
-        user_id = call.message.chat.id
         link = f"https://t.me/{bot_username}?start={user_id}"
         
         await call.message.answer(
             text=f'{html.bold(f'''
 ✅ Balans yig'ish uchun havolangizni do'stlaringizga ulashing
-❗️1 ta taklif qilingan do'stingiz uchun 1000 so'm (🇺🇿) balans oling !
+❗️1 ta taklif qilingan do'stingiz uchun 1000 (UZS) balans oling !
 👇Bu sizning havolangiz: 
 {link}
         ''')}',
@@ -124,7 +124,15 @@ async def havolam(call: CallbackQuery, state: FSMContext):
 
     elif action == "ballans":
         await call.message.answer(
-            text=f'<b>Sizning balansizngiz</b>:\n\n\n@{bot_username}',
+            text=f'''
+                💵 <b>Sizning balansizngiz : {Balans(user_id) * 1000 } (UZS)</b>
+
+👤 <b>Taklif qilingan foydalanuvchilar soni : {Balans(user_id)} ta</b>
+
+💳 <b>Balansingizni yechib olish uchun minimum 10000 (UZS) bo'lishi kerak.</b>
+
+@{bot_username}
+        ''',
             reply_markup=qaytish
         )
 
