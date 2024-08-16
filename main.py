@@ -129,7 +129,7 @@ async def havolam(call: CallbackQuery, state: FSMContext):
 
 👤 <b>Taklif qilingan foydalanuvchilar soni : {Balans(user_id)} ta</b>
 
-💳 <b>Balansingizni yechib olish uchun minimum 10000 (UZS) bo'lishi kerak.</b>
+💳 <b>Balansingiz minimum 10000 (UZS) bo'lgandan keyin yechib olishingiz mumkin.</b>
 
 @{bot_username}
         ''',
