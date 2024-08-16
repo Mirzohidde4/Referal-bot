@@ -36,7 +36,12 @@ async def smd_start(message: Message, state: FSMContext):
             referal_username = referal_user.username
             referal_fullname = referal_user.full_name
 
-            # Add_Ref(ref_user_id=referal_user_id, new_user_id=new_user_id) xato ishlatildi
+            await state.update_data(
+                {
+                    "referal_user_id": referal_user_id,
+                    "new_user_id": new_user_id
+                }
+            )
 
             if referal_username:
                 await message.reply(
@@ -74,6 +79,20 @@ async def telephon(message: Message, state: FSMContext):
     else:    
         try:
             Add_db(user_id=user_id, fullname=fullname, username=username, phone=tel)
+
+            data = await state.get_data()
+            referal_user_id = data.get('referal_user_id')
+            new_user_id = data.get('new_user_id')
+
+            if user_id == new_user_id:
+                Add_Ref(ref_user_id=referal_user_id, new_user_id=new_user_id)
+
+                await bot.send_message(
+                    chat_id=referal_user_id,
+                    text=f'Siz botga @{username} ni taklif qildingiz!'
+                )
+            
+
             await message.answer(
                 text=f'{html.bold("✅ Siz ro'yhatdan muvaffaqiyatli o'tdingiz.\nBotdan foydalanishingiz mumkin.")}\n\n@{bot_username}',
                 reply_markup=btn.as_markup()
@@ -82,7 +101,7 @@ async def telephon(message: Message, state: FSMContext):
         except Exception as ex:
             print(f"User saqlashda xatolik: {ex}")
 
-
+    
 @dp.callback_query(F.data.startswith("my_"))
 async def havolam(call: CallbackQuery, state: FSMContext):
     await call.message.delete()
@@ -105,7 +124,7 @@ async def havolam(call: CallbackQuery, state: FSMContext):
 
     elif action == "ballans":
         await call.message.answer(
-            text=f'Sizning balansizngiz:\n\n\n@{bot_username}',
+            text=f'<b>Sizning balansizngiz</b>:\n\n\n@{bot_username}',
             reply_markup=qaytish
         )
 
